@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Self-Driving Car: GA v4.1 vs Evolutionary Explorer v5</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  /* Times New Roman fallback stack */
+  :root { --times: 'Times New Roman', Times, serif; }
+</style>
+<style>
+
+/* ─── RESET ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+/* ─── BASE ─────────────────────────────────────────── */
+:root {
+  --white:    #ffffff;
+  --off:      #f4f4f2;
+  --rule:     #d8d8d4;
+  --rule-mid: #b0b0a8;
+  --ink-dim:  #555550;
+  --ink:      #1a1a18;
+  --black:    #0d0d0b;
+  --mono: 'DM Mono', 'Courier New', monospace;
+  --serif: 'EB Garamond', Georgia, serif;
+  --times: 'Times New Roman', Times, serif;
+}
+
+body {
+  background: var(--white);
+  color: var(--ink);
+  font-family: var(--times);
+  font-size: 18px;
+  line-height: 1.82;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── LAYOUT ─────────────────────────────────────────── */
+.page { max-width: 740px; margin: 0 auto; padding: 0 28px 120px; }
+
+/* ─── HEADER ─────────────────────────────────────────── */
+header {
+  padding: 80px 0 64px;
+  border-bottom: 1px solid var(--black);
+}
+
+.label-sm {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(26px, 4.5vw, 44px);
+  line-height: 1.15;
+  color: var(--black);
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+}
+
+h1 em { font-style: italic; }
+
+.header-meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-dim);
+  letter-spacing: 0.04em;
+  border-top: 1px solid var(--rule);
+  padding-top: 16px;
+  margin-top: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+}
+
+.header-meta span {
+  padding-right: 28px;
+  border-right: 1px solid var(--rule);
+  margin-right: 28px;
+  line-height: 2;
+}
+.header-meta span:last-child { border-right: none; }
+
+/* ─── SECTIONS ─────────────────────────────────────────── */
+section { padding: 64px 0 0; }
+
+.sec-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 6px;
+}
+
+h2 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(20px, 3vw, 26px);
+  color: var(--black);
+  letter-spacing: -0.01em;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--black);
+}
+
+h3 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--black);
+  margin: 36px 0 10px;
+  letter-spacing: 0.01em;
+}
+
+/* ─── BODY TEXT: Times New Roman ─── */
+p { margin-bottom: 18px; font-family: var(--times); font-size: 18px; line-height: 1.82; color: var(--ink); }
+p:last-child { margin-bottom: 0; }
+
+/* ─── ABSTRACT ─────────────────────────────────────────── */
+.abstract {
+  margin: 32px 0 0;
+  padding: 24px 28px;
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--black);
+  font-family: var(--times);
+  font-size: 17px;
+  line-height: 1.82;
+  color: var(--ink);
+  position: relative;
+}
+
+.abstract .abs-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 12px;
+}
+
+/* ─── MEDIA SLOTS ─────────────────────────────────────────── */
+.media-block { margin: 36px 0; }
+
+.media-slot {
+  border: 1px solid var(--rule);
+  background: var(--off);
+}
+
+.slot-bar {
+  background: var(--black);
+  padding: 9px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--rule);
+}
+
+.slot-bar .slot-type {
+  background: var(--white);
+  color: var(--black);
+  padding: 2px 8px;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+.slot-inner {
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 24px;
+  gap: 12px;
+}
+
+.slot-inner.video-slot { min-height: 260px; }
+
+.slot-cross {
+  width: 40px; height: 40px;
+  position: relative;
+  opacity: 0.18;
+}
+
+.slot-cross::before,
+.slot-cross::after {
+  content: '';
+  position: absolute;
+  background: var(--black);
+}
+
+.slot-cross::before { width: 1px; height: 100%; left: 50%; top: 0; }
+.slot-cross::after  { height: 1px; width: 100%; top: 50%; left: 0; }
+
+.slot-inner .slot-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  text-align: center;
+}
+
+.slot-inner .slot-desc {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--rule-mid);
+  text-align: center;
+  line-height: 1.9;
+  max-width: 420px;
+}
+
+.slot-inner .slot-desc code {
+  color: var(--ink);
+  background: var(--rule);
+  padding: 1px 5px;
+  font-size: 9px;
+}
+
+.slot-caption {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-dim);
+  padding: 10px 16px;
+  border-top: 1px solid var(--rule);
+  letter-spacing: 0.06em;
+}
+
+/* ─── FORMULA BLOCKS ─────────────────────────────────────────── */
+.formula {
+  background: var(--black);
+  color: #e8e8e4;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.9;
+  padding: 22px 26px;
+  margin: 20px 0;
+  overflow-x: auto;
+  position: relative;
+}
+
+.formula .f-label {
+  position: absolute;
+  top: 10px; right: 14px;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #555550;
+}
+
+.formula .f-comment { color: #555550; }
+.formula .f-hi      { color: #ffffff; font-weight: 500; }
+.formula .f-dim     { color: #888880; }
+
+/* ─── COMPARISON TABLE ─────────────────────────────────────────── */
+.cmp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  margin: 24px 0 36px;
+}
+
+.cmp-table thead tr {
+  border-bottom: 2px solid var(--black);
+}
+
+.cmp-table th {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  font-weight: 500;
+}
+
+.cmp-table th:nth-child(1) { width: 34%; }
+.cmp-table th:nth-child(2) { width: 33%; }
+.cmp-table th:nth-child(3) { width: 33%; }
+
+.cmp-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+.cmp-table td:nth-child(1) { color: var(--ink-dim); }
+
+.cmp-table tr:hover td { background: var(--off); }
+
+/* ─── INLINE CODE ─────────────────────────────────────────── */
+code {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  background: #e8e8e4;
+  border: 1px solid #c8c8c2;
+  padding: 2px 7px;
+  color: #0d0d0b;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+/* ─── PIPELINE ─────────────────────────────────────────── */
+.pipeline { margin: 28px 0 36px; border-left: 1px solid var(--black); padding-left: 28px; }
+
+.pipe-step { margin-bottom: 28px; position: relative; }
+.pipe-step::before {
+  content: '';
+  width: 7px; height: 7px;
+  background: var(--black);
+  position: absolute;
+  left: -32px; top: 6px;
+}
+
+.pipe-num {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--ink-dim);
+  margin-bottom: 4px;
+}
+
+.pipe-title {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--black);
+  margin-bottom: 6px;
+}
+
+.pipe-body {
+  font-family: var(--times);
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 8px;
+  line-height: 1.78;
+}
+
+.pipe-formula {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-dim);
+  border-left: 2px solid var(--rule);
+  padding-left: 10px;
+  margin-top: 6px;
+}
+
+/* ─── BIAS CARDS ─────────────────────────────────────────── */
+.bias-item {
+  border-top: 1px solid var(--rule);
+  padding: 28px 0;
+}
+
+.bias-item:first-child { border-top: 1px solid var(--black); }
+
+.bias-header {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.bias-id {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.bias-severity {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid var(--black);
+  padding: 2px 8px;
+  color: var(--black);
+}
+
+.bias-severity.low {
+  border-color: var(--rule-mid);
+  color: var(--ink-dim);
+}
+
+.bias-title {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--black);
+  margin-bottom: 10px;
+  letter-spacing: -0.01em;
+}
+
+.bias-body {
+  font-family: var(--times);
+  font-size: 17px;
+  color: var(--ink);
+  margin-bottom: 12px;
+  line-height: 1.8;
+}
+
+.bias-mitigation {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink);
+  border-left: 2px solid var(--black);
+  padding: 10px 14px;
+  background: var(--off);
+  line-height: 1.7;
+}
+
+.bias-mitigation::before {
+  content: 'MITIGASI  ';
+  letter-spacing: 0.15em;
+  color: var(--ink-dim);
+}
+
+/* ─── REAL CASE CARDS ─────────────────────────────────────────── */
+.use-case-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  margin: 24px 0 36px;
+}
+
+@media (max-width: 560px) {
+  .use-case-grid { grid-template-columns: 1fr; }
+}
+
+.use-case-card {
+  background: var(--white);
+  padding: 24px 22px;
+}
+
+.uc-num {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--ink-dim);
+  margin-bottom: 8px;
+}
+
+.uc-title {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--black);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.uc-body {
+  font-family: var(--times);
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.75;
+}
+
+/* ─── SOCIAL / ICON LINKS ─────────────────────────────────────────── */
+.social-section { margin: 28px 0 36px; display: flex; flex-direction: column; gap: 28px; }
+
+.social-group { display: flex; flex-direction: column; gap: 10px; }
+
+.social-group-label {
+  font-family: var(--times);
+  font-size: 17px;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--ink);
+  width: fit-content;
+  transition: opacity 0.15s;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 2px;
+}
+
+.social-link:hover { opacity: 0.6; border-bottom-color: var(--black); }
+
+.social-icon {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.social-icon svg { width: 22px; height: 22px; fill: var(--black); }
+
+.social-link-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink);
+  letter-spacing: 0.04em;
+}
+
+/* ─── REFERENCES ─────────────────────────────────────────── */
+.ref-list { list-style: none; margin: 20px 0; }
+
+.ref-list li {
+  font-family: var(--times);
+  font-size: 16px;
+  color: var(--ink);
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+  padding-left: 32px;
+  position: relative;
+  line-height: 1.72;
+}
+
+.ref-list li::before {
+  content: '[' counter(ref) ']';
+  counter-increment: ref;
+  font-family: var(--mono);
+  font-size: 9px;
+  position: absolute;
+  left: 0; top: 15px;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.ref-list { counter-reset: ref; }
+
+/* ─── DIVIDER ─────────────────────────────────────────── */
+.rule { border: none; border-top: 1px solid var(--rule); margin: 48px 0 0; }
+.rule-bold { border: none; border-top: 1px solid var(--black); margin: 64px 0 0; }
+
+/* ─── FOOTER ─────────────────────────────────────────── */
+footer {
+  padding: 36px 0;
+  border-top: 1px solid var(--black);
+  margin-top: 80px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-dim);
+  letter-spacing: 0.08em;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ─── BLOCKQUOTE / NOTE ─────────────────────────────────────────── */
+.note {
+  border-left: 3px solid var(--rule-mid);
+  padding: 14px 20px;
+  margin: 20px 0;
+  font-family: var(--times);
+  font-size: 16px;
+  color: var(--ink);
+  font-style: italic;
+  line-height: 1.78;
+}
+
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ═══════════════════════════════ HEADER ═══════════════════════════════ -->
+<header>
+  <div class="label-sm">Neuroevolution Research — Comparative Study</div>
+  <h1>Self-Driving Car:<br><em>Stable GA v4.1 versus Evolutionary Explorer v5</em></h1>
+  <div class="header-meta">
+    <span>Genetic Algorithm + Neural Network</span>
+    <span>100 Generasi</span>
+    <span>Populasi Maks 100</span>
+    <span>82 Parameter / Genome</span>
+    <span>No Backpropagation</span>
+  </div>
+  <div class="abstract">
+    <div class="abs-label">Abstrak</div>
+    Dokumen ini mempresentasikan studi komparatif antara dua iterasi sistem neuroevolution berbasis Genetic Algorithm untuk agen kendaraan otonom pada lingkungan simulasi sirkuit. <em>Stable GA v4.1</em> merupakan sistem yang berfokus pada stabilitas evolusi melalui pengendalian parameter mutasi secara ketat. <em>Evolutionary Explorer v5</em> adalah reimplementasi arsitektur evolusi secara fundamental — mengintegrasikan Novelty Search, NEAT-inspired Speciation, Catastrophic Reset, dan Adaptive Mutation Rate sebagai satu ekosistem eksplorasi. Seluruh komputasi berjalan tanpa operasi gradient; optimasi dilakukan sepenuhnya melalui mekanisme seleksi, crossover, dan mutasi pada populasi genome neural network.
+  </div>
+</header>
+
+
+<!-- ═══════════════════════════════
+     SECTION 1 — v4.1
+═══════════════════════════════ -->
+<section id="v41">
+  <div class="sec-num">01 — Stable GA v4.1</div>
+  <h2>Stable GA v4.1 — Arsitektur dan Analisis</h2>
+
+  <!-- PLACEHOLDERS v4.1 -->
+  <h3>Data Statistik Training</h3>
+
+  <div class="media-block">
+    <div class="media-slot">
+      <div class="slot-bar">
+        <span>Gambar 1 — v4.1 Core Training Metrics — 100 Generasi</span>
+        <span class="slot-type">PNG</span>
+      </div>
+      <img src="statistik_v4.1_stable.png" style="width:100%; display:block;">
+      <div class="slot-caption">Gambar 1 — v4.1 Core Training Metrics — 100 Generasi</div>
+    </div>
+  </div>
+
+  <div class="media-block">
+    <div class="media-slot">
+      <div class="slot-bar">
+        <span>Gambar 2 — v4.1 Alive Agents per Frame — Generasi Terakhir</span>
+        <span class="slot-type">PNG</span>
+      </div>
+      <img src="statistik_v4.1_live.png" style="width:100%; display:block;">
+      <div class="slot-caption">Gambar 2 — v4.1 Alive Agents per Frame — Generasi Terakhir</div>
+    </div>
+  </div>
+
+  <h3>Video Simulasi</h3>
+
+  <div class="media-block">
+    <div class="media-slot">
+      <div class="slot-bar">
+        <span>v4.1 — Generasi 1</span>
+        <span class="slot-type">MP4</span>
+      </div>
+      <video controls style="width:100%; display:block;">
+        <source src="simulasi_v4.1_gen_1.mp4" type="video/mp4">
+      </video>
+      <div class="slot-caption">Video 1 — v4.1 Generasi 1 — 2 Individu — Perilaku Inisial</div>
+    </div>
+  </div>
+
+  <div class="media-block">
+    <div class="media-slot">
+      <div class="slot-bar">
+        <span>v4.1 — Generasi 100</span>
+        <span class="slot-type">MP4</span>
+      </div>
+      <video controls style="width:100%; display:block;">
+        <source src="simulasi_v4.1_gen_100.mp4" type="video/mp4">
+      </video>
+      <div class="slot-caption">Video 2 — v4.1 Generasi 100 — 100 Individu — Hasil Akhir Evolusi</div>
+    </div>
+  </div>
+
+  <!-- PENJELASAN v4.1 -->
+  <h3>Lingkungan Simulasi</h3>
+  <p>Lingkungan berupa sirkuit oval termodifikasi dengan dimensi 500 x 400 pixel, dirender menggunakan PIL. Geometri lintasan dibentuk melalui superposisi fungsi sinusoidal pada elips dasar untuk menghasilkan enam bump:</p>
+
+  <div class="formula">
+    <span class="f-label">Track Geometry</span>
+    <div><span class="f-comment">// Radii sebagai fungsi parameter t</span></div>
+    <div>r_x(t) = r_x_base + <span class="f-hi">sum_k</span> [ A_k * sin( (t - phi_k) * omega_k ) ]</div>
+    <div>r_y(t) = r_y_base + <span class="f-hi">sum_k</span> [ A_k * 0.6 * sin( (t - phi_k) * omega_k ) ]</div>
+    <div>&nbsp;</div>
+    <div><span class="f-comment">// Track mask — biner on/off-track</span></div>
+    <div>TRACK_MASK[y, x] = ( TRACK_ARR[y, x, 0] <span class="f-hi">&gt; 150</span> )</div>
+  </div>
+
+  <p>Faktor 0.6 pada sumbu-y menghasilkan asimetri vertikal yang membuat sirkuit tidak terlalu simetris secara geometri. Spawn point agen ditentukan melalui scan vertikal yang memverifikasi ketersediaan lintasan pada radius ±10 pixel.</p>
+
+  <h3>Sensor Model</h3>
+  <p>Setiap agen dilengkapi 7 ray-cast sensor yang dipancarkan pada sudut relatif terhadap orientasi kendaraan:</p>
+
+  <div class="formula">
+    <span class="f-label">Ray-Cast Sensors</span>
+    <div>theta_i = theta_heading + delta_i</div>
+    <div>delta_i &isin; { -90, -60, -30, 0, 30, 60, 90 }  <span class="f-comment">// degrees</span></div>
+    <div>&nbsp;</div>
+    <div><span class="f-comment">// Normalized distance to wall</span></div>
+    <div>s_i = d_collision_i / L_sensor  &isin;  [0, 1]</div>
+    <div>s_i = 1.0  <span class="f-comment">if no wall hit within L_sensor = 30 px</span></div>
+  </div>
+
+  <h3>Neural Network Controller</h3>
+  <p>Controller diimplementasikan sebagai 2-layer feedforward neural network. Total parameter genome adalah 82.</p>
+
+  <div class="formula">
+    <span class="f-label">Neural Network</span>
+    <div><span class="f-comment">// Architecture: 7 -> 8 -> 2</span></div>
+    <div>h = tanh( x @ W1 + b1 )</div>
+    <div>o = tanh( h @ W2 + b2 )</div>
+    <div>&nbsp;</div>
+    <div><span class="f-comment">// Output interpretation</span></div>
+    <div>steer = o[0]              <span class="f-comment">// in [-1, 1]</span></div>
+    <div>gas   = ( o[1] + 1 ) / 2  <span class="f-comment">// in [0, 1]</span></div>
+    <div>&nbsp;</div>
+    <div><span class="f-comment">// Genome length</span></div>
+    <div>|theta| = 7*8 + 8 + 8*2 + 2 = <span class="f-hi">82 parameters</span></div>
+  </div>
+
+  <h3>Kinematik Kendaraan</h3>
+  <div class="formula">
+    <span class="f-label">Vehicle Kinematics</span>
+    <div>theta_{t+1} = theta_t + o[0] * omega_turn       <span class="f-comment">// omega_turn = 2.2</span></div>
+    <div>v_t         = gas_t * v_max + v_base           <span class="f-comment">// v_max=2.0, v_base=0.5</span></div>
+    <div>x_{t+1}     = x_t + v_t * cos(theta_{t+1})</div>
+    <div>y_{t+1}     = y_t + v_t * sin(theta_{t+1})</div>
+    <div>&nbsp;</div>
+    <div><span class="f-comment">// Collision: rotate 4 bounding-box corners</span></div>
+    <div>[x'_c, y'_c] = R(theta) * [lx, ly]^T + [x, y]^T</div>
+    <div>dead  = any( not on_track(x'_c, y'_c) )</div>
+  </div>
+
+  <h3>Fitness Function</h3>
+  <p>Fitness diukur berdasarkan coverage area yang dikunjungi selama satu episode, bukan jarak point-to-point. Visited cells dikuantisasi pada resolusi 10x10 pixel.</p>
+
+  <div class="formula">
+    <span class="f-label">Fitness</span>
+    <div>F(i) = | { floor(x_t/10), floor(y_t/10) } |  for t = 0..T</div>
+    <div>&nbsp;</div>
+    <div><span class="f-comment">// Spawn jitter — implicit regularization</span></div>
+    <div>x_0 = x_spawn + U(-8, 8)</div>
+    <div>y_0 = y_spawn + U(-8, 8)</div>
+    <div>theta_0 = theta_spawn + U(-10, 10)</div>
+  </div>
+
+  <h3>Genetic Algorithm — Top-K Elitism + Uniform Crossover</h3>
+  <p>Populasi dimulai dari 2 individu dan berkembang eksponensial dengan cap di 100:</p>
+
+  <div class="formula">
+    <span class="f-label">Population Growth</span>
+    <div>N_{g+1} = min( 2 * N_g, N_max )    <span class="f-comment">// N_max = 100</span></div>
+    <div>Saturasi pada generasi ceil(log2(100/2)) = <span class="f-hi">6</span></div>
+  </div>
+
+  <p>Seleksi menggunakan Top-K pool dengan K=10. Satu elit disalin langsung tanpa mutasi (strict elitism):</p>
+
+  <div class="formula">
+    <span class="f-label">Selection + Elitism</span>
+    <div>P = { theta_i | i in argsort_desc(F)[:10] }  <span class="f-comment">// Top-K pool</span></div>
+    <div>theta_elite^{g+1} = theta_best^{g}           <span class="f-comment">// copied unchanged</span></div>
+  </div>
+
+  <p>Reproduksi menggunakan uniform crossover, di mana setiap parameter diinherit secara independen dari salah satu parent:</p>
+
+  <div class="formula">
+    <span class="f-label">Uniform Crossover</span>
+    <div>theta_child[j] = theta_A[j]  if u_j &lt; 0.5</div>
+    <div>               = theta_B[j]  otherwise</div>
+    <div>u_j ~ U(0, 1)  <span class="f-comment">// independent per parameter</span></div>
+  </div>
+
+  <p>Mutasi dirancang sebagai two-tier stochastic perturbation. Sebesar 10% dari mutasi yang terjadi masuk ke chaos regime dengan strength lebih besar:</p>
+
+  <div class="formula">
+    <span class="f-label">Staged Mutation — v4.1</span>
+    <div>theta_j' = theta_j + eps_j * m_j     <span class="f-comment">// with prob p_m = 0.12</span></div>
+    <div>eps_j ~ N(0, 1)</div>
+    <div>&nbsp;</div>
+    <div>m_j = U(0.5, 2.0)   if u_j &lt; p_chaos = 0.10   <span class="f-comment">// chaos</span></div>
+    <div>    = U(0.05, 0.5)  otherwise                  <span class="f-comment">// normal</span></div>
+    <div>&nbsp;</div>
+    <div><span class="f-comment">// Effective distribution</span></div>
+    <div>m_j ~ (1-p_c)*U(0.05, 0.5) + p_c*U(0.5, 2.0)</div>
+  </div>
+
+  <p>Perbandingan parameter mutasi antara versi tidak stabil (v3) dan v4.1:</p>
+
+  <table class="cmp-table">
+    <thead>
+      <tr>
+        <th>Parameter</th>
+        <th>v3 — Unstable</th>
+        <th>v4.1 — Stable</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Mutation Rate</td><td>0.40</td><td>0.12</td></tr>
+      <tr><td>Mutation Strength</td><td>3.0 (fixed)</td><td>0.05 – 0.50 (range)</td></tr>
+      <tr><td>Chaos Probability</td><td>0.30</td><td>0.10</td></tr>
+      <tr><td>Chaos Strength</td><td>—</td><td>0.50 – 2.00</td></tr>
+      <tr><td>Selection</td><td>Adam &amp; Eve (K=2)</td><td>Top-K pool (K=10)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Engineering Fixes v4.1</h3>
+  <p>Tiga bug kritis diperbaiki dari v4.0:</p>
+  <p><strong>Fix 1 — Reference Safety.</strong> <code>random.choice(parent_pool)</code> sebelumnya mengembalikan referensi langsung. Mutasi pada <code>pA</code> atau <code>pB</code> dapat mengkorumpsikan parent pool untuk offspring berikutnya. Solusi: <code>random.choice(parent_pool).copy()</code>.</p>
+  <p><strong>Fix 2 — Actual Mutation Delta Logging.</strong> Histogram mutasi sebelumnya diisi nilai sampel buatan, bukan delta aktual. Solusi: catat <code>(child - before_mutation)</code> langsung dari setiap offspring yang diproduksi.</p>
+  <p><strong>Fix 3 — Population Sync.</strong> <code>history[7]</code> tidak menyinkronkan <code>current_pop</code> aktual dari training loop, menyebabkan grafik population growth inkonsisten. Solusi: teruskan <code>current_pop</code> secara eksplisit ke dalam tuple history.</p>
+</section>
+
+
+<!-- ═══════════════════════════════
+     SECTION 2 — v5
+═══════════════════════════════ -->
+<section id="v5">
+  <div class="sec-num">02 — Evolutionary Explorer v5</div>
+  <h2>Evolutionary Explorer v5 — Arsitektur dan Analisis</h2>
+
+  <p>v5 bukan perbaikan incremental dari v4.1. Ini adalah reimplementasi lapisan evolusi secara fundamental. Fondasi — lingkungan simulasi, sensor model, neural network, fitness function — dipertahankan identik. Seluruh perubahan terkonsentrasi pada mekanisme seleksi, reproduksi, dan manajemen diversitas.</p>
+
+  <!-- PLACEHOLDERS v5 -->
+  <h3>Data Statistik Training</h3>
+
+  <div class="media-block">
+    <div class="media-slot">
+      <div class="slot-bar">
+        <span>Gambar 3 — v5 Core Training Metrics — 100 Generasi</span>
+        <span class="slot-type">PNG</span>
+      </div>
+      <img src="statistik_v5.png" style="width:100%; display:block;">
+      <div class="slot-caption">Gambar 3 — v5 Core Training Metrics — 100 Generasi</div>
+    </div>
+  </div>
+
+  <div class="media-block">
+    <div class="media-slot">
+      <div class="slot-bar">
+        <span>Gambar 4 — v5 Evolutionary Dynamics — Species / Novelty / Mutation Rate / Stagnation</span>
+        <span class="slot-type">PNG</span>
+      </div>
+      <img src="statistik_v5_yang_kedua.png" style="width:100%; display:block;">
+      <div class="slot-caption">Gambar 4 — v5 Evolutionary Dynamics — Species / Novelty / Mutation Rate / Stagnation</div>
+    </div>
+  </div>
+
+  <h3>Video Simulasi</h3>
+
+  <div class="media-block">
+    <div class="media-slot">
+      <div class="slot-bar">
+        <span>v5 — Generasi 1</span>
+        <span class="slot-type">MP4</span>
+      </div>
+      <video controls style="width:100%; display:block;">
+        <source src="simulasi_v5_gen_1.mp4" type="video/mp4">
+      </video>
+      <div class="slot-caption">Video 3 — v5 Generasi 1 — Extended HUD dengan Evolutionary State</div>
+    </div>
+  </div>
+
+  <div class="media-block">
+    <div class="media-slot">
+      <div class="slot-bar">
+        <span>v5 — Generasi 100</span>
+        <span class="slot-type">MP4</span>
+      </div>
+      <video controls style="width:100%; display:block;">
+        <source src="simulasi_v5_gen_100.mp4" type="video/mp4">
+      </video>
+      <div class="slot-caption">Video 4 — v5 Generasi 100 — 100 Individu — Evolutionary Explorer Final State</div>
+    </div>
+  </div>
+
+  <!-- PENJELASAN v5 -->
+  <h3>Behavioral Descriptor Vector</h3>
+  <p>Inovasi kritis v5: setiap agen menghasilkan vektor 5-dimensi yang merangkum bagaimana agen berperilaku, bukan hanya seberapa baik. Ini adalah fondasi dari Novelty Search.</p>
+
+  <div class="formula">
+    <span class="f-label">Behavioral Descriptor</span>
+    <div>b_i = [ x_final/W,  y_final/H,  |V|/200,  mean|steer|,  n_col/10 ]</div>
+    <div>b_i &isin; R^5,  semua komponen dinormalisasi ke [0, 1]</div>
+    <div>&nbsp;</div>
+    <div><span class="f-comment">// Dimensi:</span></div>
+    <div><span class="f-comment">[0] posisi akhir x   [1] posisi akhir y</span></div>
+    <div><span class="f-comment">[2] coverage proxy   [3] rata-rata |steering|</span></div>
+    <div><span class="f-comment">[4] collision count  </span></div>
+  </div>
+
+  <h3>Novelty Search Engine</h3>
+  <p>Novelty score dihitung sebagai rata-rata jarak Euclidean ke k nearest neighbors dalam behavior space. Pool pencarian mencakup populasi saat ini dan global archive persisten lintas generasi:</p>
+
+  <div class="formula">
+    <span class="f-label">Novelty Score (k-NN)</span>
+    <div>rho_i = (1/k) * sum_{j=1}^{k} || b_i - b_nn_j ||_2    <span class="f-comment">// k = 10</span></div>
+    <div>&nbsp;</div>
+    <div><span class="f-comment">// Pool = current population + global archive</span></div>
+    <div><span class="f-comment">// Self-distance (approx 0) dikeluarkan dari k-NN</span></div>
+    <div>&nbsp;</div>
+    <div><span class="f-comment">// Archive policy: FIFO, max 500 entries</span></div>
+    <div>Archive &larr; Archive &cup; { b_i | rho_i &ge; tau = 3.0 }</div>
+    <div>if |Archive| &gt; 500: evict oldest</div>
+  </div>
+
+  <p>Composite fitness menggabungkan raw score dengan novelty pressure:</p>
+
+  <div class="formula">
+    <span class="f-label">Composite Fitness</span>
+    <div>F_composite(i) = F_raw(i) + <span class="f-hi">lambda</span> * rho_i</div>
+    <div>lambda = 0.15    <span class="f-comment">// novelty weight</span></div>
+  </div>
+
+  <h3>NEAT-Inspired Speciation</h3>
+  <p>Genome distance diukur menggunakan mean absolute difference (MAD) di seluruh 82 parameter. Assignment ke species menggunakan prosedur greedy terhadap representatif terdekat:</p>
+
+  <div class="formula">
+    <span class="f-label">Genome Distance + Speciation</span>
+    <div>delta(theta_A, theta_B) = (1/|theta|) * sum_j | theta_A_j - theta_B_j |</div>
+    <div>&nbsp;</div>
+    <div>s*(i) = argmin_s  delta( theta_i, theta_s_representative )</div>
+    <div>Assign i -> s*   if delta &lt; delta_threshold = 1.5</div>
+    <div>Create new species  if delta &ge; 1.5 AND |S| &lt; S_max = 10</div>
+    <div>&nbsp;</div>
+    <div><span class="f-comment">// Pruning: hapus species dengan anggota &lt; 2</span></div>
+    <div><span class="f-comment">// Representative = anggota dengan F_composite tertinggi</span></div>
+  </div>
+
+  <p>Slot offspring untuk setiap species dialokasikan secara proporsional terhadap mean fitness-nya:</p>
+
+  <div class="formula">
+    <span class="f-label">Proportional Slot Allocation</span>
+    <div>n_s = floor( (F_bar_s / sum_s' F_bar_s') * N_remaining )</div>
+    <div>&nbsp;</div>
+    <div><span class="f-comment">// Komposisi generasi berikutnya:</span></div>
+    <div>P_{g+1} = { 1 global elite }  +  { 10% random inject }  +  { intra-species offspring }</div>
+  </div>
+
+  <h3>Adaptive Mutation Rate</h3>
+  <p>Mutation rate adalah state variable yang diperbarui setiap generasi berdasarkan sinyal fitness progress. Sistem secara otomatis beralih antara mode eksploitasi dan eksplorasi:</p>
+
+  <div class="formula">
+    <span class="f-label">Adaptive Mutation Rate</span>
+    <div>r_{g+1} = r_g * 0.95   <span class="f-comment">if F_best^g > F_best_global  (improved)</span></div>
+    <div>r_{g+1} = r_g * 1.20   <span class="f-comment">if stagnation_soft >= 10</span></div>
+    <div>r_{g+1} = r_g           <span class="f-comment">otherwise</span></div>
+    <div>&nbsp;</div>
+    <div>r_g &isin; [ r_min = 0.05,  r_max = 0.40 ]  <span class="f-comment">// clipped</span></div>
+  </div>
+
+  <h3>Catastrophic Reset</h3>
+  <p>Ketika hard stagnation counter mencapai 25 generasi tanpa improvement pada best fitness, sistem melakukan hard population reset:</p>
+
+  <div class="formula">
+    <span class="f-label">Catastrophic Reset</span>
+    <div><span class="f-comment">// Trigger condition</span></div>
+    <div>if stagnation_hard &ge; 25:</div>
+    <div>&nbsp;&nbsp;P_reset = { theta_1..theta_5 elite }  +  { N-5 genomes ~ N(0, 0.25*I) }</div>
+    <div>&nbsp;&nbsp;r_post  = min( r * 1.5, r_max )</div>
+    <div>&nbsp;&nbsp;species_pool.clear()  <span class="f-comment">// force re-clustering</span></div>
+    <div>&nbsp;&nbsp;stagnation_hard = 0</div>
+  </div>
+
+  <p>Mempertahankan 5 elite menghindari <em>restart amnesia</em> — sistem tidak perlu relearn dari nol, melainkan menggunakan 5 seed solusi terbaik yang sudah diketahui sebagai titik awal.</p>
+
+  <h3>Full Evolution Pipeline v5 per Generasi</h3>
+
+  <div class="pipeline">
+    <div class="pipe-step">
+      <div class="pipe-num">Step 01</div>
+      <div class="pipe-title">Collect Behavioral Descriptors</div>
+      <p class="pipe-body">Setiap agen menghasilkan vektor 5-dimensi yang dinormalisasi: posisi akhir, coverage, mean steering magnitude, dan collision count.</p>
+      <div class="pipe-formula">b_i &isin; R^5</div>
+    </div>
+    <div class="pipe-step">
+      <div class="pipe-num">Step 02</div>
+      <div class="pipe-title">Compute Novelty Scores</div>
+      <p class="pipe-body">Hitung jarak L2 ke 10 nearest neighbor dalam gabungan populasi dan global archive. Self-distance dikecualikan.</p>
+      <div class="pipe-formula">rho_i = mean k-NN distance in behavior space</div>
+    </div>
+    <div class="pipe-step">
+      <div class="pipe-num">Step 03</div>
+      <div class="pipe-title">Update Novelty Archive</div>
+      <p class="pipe-body">Tambahkan behavioral vector ke archive jika rho_i &ge; 3.0. FIFO eviction jika melebihi 500 entries.</p>
+      <div class="pipe-formula">Archive &larr; Archive &cup; { b_i | rho_i &ge; 3.0 }</div>
+    </div>
+    <div class="pipe-step">
+      <div class="pipe-num">Step 04</div>
+      <div class="pipe-title">Compute Composite Score</div>
+      <p class="pipe-body">Gabungkan raw fitness dengan novelty pressure menggunakan bobot lambda = 0.15.</p>
+      <div class="pipe-formula">F_composite = F_raw + 0.15 * rho_i</div>
+    </div>
+    <div class="pipe-step">
+      <div class="pipe-num">Step 05</div>
+      <div class="pipe-title">Assign to Species</div>
+      <p class="pipe-body">Setiap genome di-assign ke species terdekat berdasarkan MAD genome distance. Species baru dibuat jika delta &ge; 1.5 dan pool belum penuh. Species dengan &lt; 2 member dipruning.</p>
+      <div class="pipe-formula">s*(i) = argmin delta(theta_i, theta_rep),  threshold = 1.5</div>
+    </div>
+    <div class="pipe-step">
+      <div class="pipe-num">Step 06</div>
+      <div class="pipe-title">Stagnation Check + Adapt Mutation Rate</div>
+      <p class="pipe-body">Perbarui kedua stagnation counter. Terapkan decay atau boost pada mutation rate. Jika hard counter &ge; 25, jalankan catastrophic reset.</p>
+      <div class="pipe-formula">r_next = r * 0.95 (improve) | r * 1.20 (plateau >= 10 gen)</div>
+    </div>
+    <div class="pipe-step">
+      <div class="pipe-num">Step 07</div>
+      <div class="pipe-title">Species-Proportional Reproduction</div>
+      <p class="pipe-body">1 global elite tanpa mutasi + 10% random genome injection + sisa slot dibagi proporsional berdasarkan mean fitness per species. Crossover dan mutasi berlangsung strictly intra-species.</p>
+      <div class="pipe-formula">P_{g+1} = {elite} + {random 10%} + {intra-species offspring}</div>
+    </div>
+  </div>
+
+  <h3>Tabel Perbandingan Arsitektur v4.1 vs v5</h3>
+  <table class="cmp-table">
+    <thead>
+      <tr>
+        <th>Komponen</th>
+        <th>v4.1 — Stable GA</th>
+        <th>v5 — Evolutionary Explorer</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Selection</td><td>Global Top-K Pool (K=10)</td><td>Species-proportional allocation</td></tr>
+      <tr><td>Fitness Signal</td><td>Raw coverage saja</td><td>F_raw + 0.15 * novelty_score</td></tr>
+      <tr><td>Mutation Rate</td><td>Fixed 0.12</td><td>Adaptive [0.05, 0.40]</td></tr>
+      <tr><td>Stagnation Soft</td><td>Tidak ada</td><td>Mutation boost setelah 10 gen</td></tr>
+      <tr><td>Stagnation Hard</td><td>Tidak ada</td><td>Catastrophic reset setelah 25 gen</td></tr>
+      <tr><td>Behavioral Diversity</td><td>Tidak ada</td><td>Novelty Search + Archive 500</td></tr>
+      <tr><td>Intra-species Isolation</td><td>Tidak ada</td><td>Crossover hanya dalam species</td></tr>
+      <tr><td>Diversity Injection</td><td>Tidak ada</td><td>10% random genome per generasi</td></tr>
+      <tr><td>Spawn Jitter</td><td>±8 px / ±10 deg</td><td>±20 px / ±25 deg</td></tr>
+      <tr><td>Behavioral Descriptor</td><td>Tidak ada</td><td>5-dim normalized vector</td></tr>
+      <tr><td>History Fields</td><td>8 field / generasi</td><td>12 field / generasi</td></tr>
+    </tbody>
+  </table>
+</section>
+
+
+<!-- ═══════════════════════════════
+     SECTION 3 — BIAS
+═══════════════════════════════ -->
+<section id="bias">
+  <div class="sec-num">03 — Limitasi dan Potensi Bias</div>
+  <h2>Potensi Bias dalam Sistem v5</h2>
+
+  <div class="note">Kompleksitas yang lebih tinggi tidak selalu berarti kualitas yang lebih baik. Setiap mekanisme baru membawa asumsi implisit dan potensi bias yang perlu diakui secara eksplisit agar hasil eksperimen dapat diinterpretasikan dengan tepat.</div>
+
+  <div class="bias-item">
+    <div class="bias-header">
+      <span class="bias-id">Bias 01</span>
+      <span class="bias-severity">Severity: High</span>
+    </div>
+    <div class="bias-title">Single Deterministic Track — Overfitting ke Geometri Spesifik</div>
+    <p class="bias-body">Seluruh eksperimen berjalan pada satu sirkuit yang di-generate dengan <code>random.seed(42)</code>. Policy yang dievolvasi sangat mungkin merupakan memorisasi profil tikungan spesifik sirkuit tersebut, bukan kemampuan generalisasi navigasi. Agen yang terlihat "pintar" pada sirkuit ini kemungkinan besar akan gagal total pada sirkuit dengan geometri yang berbeda meskipun dengan lebar lintasan yang sama. Ini adalah varian dari reward hacking dalam evolutionary setting.</p>
+    <div class="bias-mitigation">Gunakan multi-track training (3–5 sirkuit berbeda dengan seed yang bervariasi) atau evolving track geometry lintas generasi untuk memaksa generalisasi policy.</div>
+  </div>
+
+  <div class="bias-item">
+    <div class="bias-header">
+      <span class="bias-id">Bias 02</span>
+      <span class="bias-severity">Severity: High</span>
+    </div>
+    <div class="bias-title">Behavioral Descriptor 5-Dim Tidak Merepresentasikan Perilaku Secara Utuh</div>
+    <p class="bias-body">Vektor <code>[x_final, y_final, coverage, mean_steer, collision]</code> adalah aproksimasi kasar dari perilaku agen. Dua agen dengan strategi navigasi yang fundamentally berbeda dapat memiliki descriptor yang sangat mirip jika mereka kebetulan mati di posisi yang sama dengan mean steering yang serupa. Ini disebut descriptor collision — novelty score tinggi tidak menjamin keberagaman strategi yang sesungguhnya.</p>
+    <div class="bias-mitigation">Tambahkan dimensi deskriptor: trajectory waypoints (koordinat x,y tiap 100 frame), distribusi sensor readings per episode, atau angular velocity histogram sepanjang episode.</div>
+  </div>
+
+  <div class="bias-item">
+    <div class="bias-header">
+      <span class="bias-id">Bias 03</span>
+      <span class="bias-severity">Severity: High</span>
+    </div>
+    <div class="bias-title">Genome Distance MAD Tidak Merefleksikan Phenotypic Distance</div>
+    <p class="bias-body">Metric kompatibilitas <code>delta = mean|theta_A - theta_B|</code> mengukur jarak dalam weight space, bukan dalam behavior space. Dua jaringan dengan weight yang sangat berbeda dapat menghasilkan output identik karena simetri dan redundansi internal. Sebaliknya, perubahan kecil pada satu weight kritis dapat mengubah perilaku secara dramatis. Speciation yang terbentuk mencerminkan kluster dalam weight space, bukan kluster dalam strategy space.</p>
+    <div class="bias-mitigation">Gunakan behavioral distance (jarak antar descriptor vektor) sebagai basis speciation, atau kombinasikan weight distance dengan phenotypic distance sebagai weighted metric.</div>
+  </div>
+
+  <div class="bias-item">
+    <div class="bias-header">
+      <span class="bias-id">Bias 04</span>
+      <span class="bias-severity">Severity: Medium</span>
+    </div>
+    <div class="bias-title">Coverage Fitness Bias terhadap Melingkar di Tempat</div>
+    <p class="bias-body">Agen yang bergerak sangat lambat dalam lingkaran kecil berulang-ulang mendapatkan fitness yang sama dengan agen yang maju sepanjang lintasan, selama jumlah unique cells yang dikunjungi sama. Selain itu, area lurus sirkuit memberikan unique cells lebih mudah dibanding tikungan tajam — agen dapat mencapai fitness tinggi tanpa pernah belajar menavigasi tikungan.</p>
+    <div class="bias-mitigation">Tambahkan directional progress reward: cell hanya dihitung jika dikunjungi dalam urutan searah searah lintasan. Tambahkan time-to-coverage penalty untuk mengurangi bias strategi lambat-melingkar.</div>
+  </div>
+
+  <div class="bias-item">
+    <div class="bias-header">
+      <span class="bias-id">Bias 05</span>
+      <span class="bias-severity">Severity: Medium</span>
+    </div>
+    <div class="bias-title">Fixed Threshold Stagnation Tidak Responsif terhadap Konteks Populasi</div>
+    <p class="bias-body">Threshold <code>STAGNATION_LIMIT = 25</code> adalah nilai konstan. Reset yang terpicu pada generasi ke-30 saat populasi masih berkembang memiliki dampak yang sangat berbeda dari reset pada generasi ke-80 saat populasi sudah mature. Selain itu, stagnation counter hanya mengukur best fitness — populasi bisa dalam kondisi aktif berkembang (diversity tinggi, mean fitness naik) namun tetap di-reset hanya karena satu individu terbaik tidak membaik.</p>
+    <div class="bias-mitigation">Gunakan composite stagnation metric yang mempertimbangkan std_fitness, mean_fitness trend, dan species count, bukan hanya best fitness. Implementasikan adaptive threshold yang bergantung pada generasi saat ini.</div>
+  </div>
+
+  <div class="bias-item">
+    <div class="bias-header">
+      <span class="bias-id">Bias 06</span>
+      <span class="bias-severity">Severity: Medium</span>
+    </div>
+    <div class="bias-title">Sinyal Adaptive Mutation Berbasis Best Fitness Sangat Noisy</div>
+    <p class="bias-body">Sinyal <code>improved = best_gen > global_best_fitness</code> adalah sinyal biner yang sensitif terhadap satu individu beruntung. Satu mutasi keberuntungan yang meningkatkan best fitness sebesar 1 unit akan men-trigger decay (rate dikecilkan), padahal peningkatan itu tidak signifikan secara statistik. Sebaliknya, ketika best fitness stabil namun mean fitness dan diversity populasi sedang tumbuh pesat, sistem tetap menganggap kondisi ini sebagai stagnasi.</p>
+    <div class="bias-mitigation">Gunakan exponential moving average dari best fitness (window 5–10 generasi) sebagai sinyal daripada nilai raw. Pertimbangkan delta mean fitness sebagai sinyal sekunder untuk adaptive mutation.</div>
+  </div>
+
+  <div class="bias-item">
+    <div class="bias-header">
+      <span class="bias-id">Bias 07</span>
+      <span class="bias-severity">Severity: Medium</span>
+    </div>
+    <div class="bias-title">Random Genome Injection 10% Dapat Mendistorsi Speciation</div>
+    <p class="bias-body">Genome random yang diinjeksikan hampir pasti membentuk species baru karena genome distance dari semua species yang ada akan melebihi threshold 1.5. Setiap generasi berpotensi ada sejumlah species baru dari genome random yang menekan species yang sudah berkembang dalam pool yang dibatasi <code>MAX_SPECIES = 10</code>. Injeksi yang tidak terkontrol dapat merusak ekosistem species yang sedang terbentuk.</p>
+    <div class="bias-mitigation">Tempatkan genome random dalam kategori terpisah yang tidak ikut dalam speciation assignment, atau kurangi fraksi inject ke 5% dan naikkan MAX_SPECIES ke 15 untuk memberikan ruang lebih pada species yang berkembang organik.</div>
+  </div>
+
+  <div class="bias-item">
+    <div class="bias-header">
+      <span class="bias-id">Bias 08</span>
+      <span class="bias-severity low">Severity: Low</span>
+    </div>
+    <div class="bias-title">Seed Hanya Mengontrol Track Generation, Bukan Seluruh Run</div>
+    <p class="bias-body"><code>random.seed(42)</code> hanya dipanggil sekali di Cell 3 untuk track generation. Komponen stochastic training — spawn jitter, crossover mask, mutation sampling, species assignment, random injection — berjalan tanpa seed yang di-set ulang. Dua run dengan konfigurasi identik akan menghasilkan trajektori evolusi yang berbeda, membuat perbandingan kuantitatif antara v4.1 dan v5 sulit dilakukan tanpa multiple runs.</p>
+    <div class="bias-mitigation">Set seed global di awal Cell 10 (training loop) dan jalankan minimal 5 independent runs per versi untuk mendapatkan mean ± std performance metrics yang valid secara statistik.</div>
+  </div>
+
+  <div class="bias-item">
+    <div class="bias-header">
+      <span class="bias-id">Bias 09</span>
+      <span class="bias-severity low">Severity: Low</span>
+    </div>
+    <div class="bias-title">Single-Episode Fitness Evaluation Sensitif terhadap Spawn Variance</div>
+    <p class="bias-body">Setiap agen dievaluasi pada satu episode dengan spawn yang di-jitter secara random. Agen yang kebetulan mendapat spawn yang menguntungkan akan mendapat fitness lebih tinggi dibanding agen dengan genome yang sama baiknya namun mendapat spawn kurang beruntung. Dengan ukuran populasi 100, variance dari spawn jitter ini memengaruhi selection pressure secara signifikan terutama pada generasi awal saat perbedaan fitness antar individu masih sangat kecil.</p>
+    <div class="bias-mitigation">Evaluasi setiap agen pada 3–5 spawn point yang berbeda dan gunakan mean fitness sebagai final score. Ini adalah praktik standar dalam evolutionary robotics untuk mendapatkan fitness estimate yang lebih reliable.</div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════
+     SECTION 4 — REAL CASE
+═══════════════════════════════ -->
+<section id="realcase">
+  <div class="sec-num">04 — Relevansi Dunia Nyata</div>
+  <h2>Eksperimen Ini Relevan untuk Apa?</h2>
+
+  <p>Pada permukaannya, ini adalah mobil kecil yang belajar mengitari sirkuit. Tetapi secara teknis, sistem yang dibangun di sini adalah miniatur dari beberapa domain riset dan rekayasa yang sangat aktif saat ini.</p>
+
+  <div class="use-case-grid">
+    <div class="use-case-card">
+      <div class="uc-num">Kasus 01</div>
+      <div class="uc-title">Autonomous Vehicle Policy Development</div>
+      <p class="uc-body">Industri kendaraan otonom (Waymo, Comma.ai, Tesla) menggunakan simulasi skala besar untuk melatih dan memvalidasi decision policy sebelum diuji di jalan. Pendekatan neuroevolution seperti ini relevan sebagai baseline atau inisialisasi awal sebelum fine-tuning dengan RL — terutama untuk kasus edge dimana reward function sulit dirumuskan secara analitik.</p>
+    </div>
+    <div class="use-case-card">
+      <div class="uc-num">Kasus 02</div>
+      <div class="uc-title">Evolutionary Robotics — Locomotion Policies</div>
+      <p class="uc-body">Riset seperti OpenAI's neuroevolution benchmark dan DeepMind's locomotion task menggunakan pendekatan evolusi populasi untuk menemukan gait policy pada robot fisik. Mekanisme yang sama — genome neural network, mutation, crossover, fitness dari behavior — digunakan untuk evolusi cara berjalan robot yang tidak dapat diderivasi secara analitik.</p>
+    </div>
+    <div class="use-case-card">
+      <div class="uc-num">Kasus 03</div>
+      <div class="uc-title">Game AI dan NPC Behavior Design</div>
+      <p class="uc-body">Studio game menggunakan neuroevolution untuk menghasilkan NPC dengan perilaku yang beragam dan tidak terprediksi. Novelty Search khususnya berguna di sini — bukan untuk membuat NPC yang "paling kuat", melainkan untuk menghasilkan NPC dengan behavioral repertoire yang kaya dan mengejutkan pemain.</p>
+    </div>
+    <div class="use-case-card">
+      <div class="uc-num">Kasus 04</div>
+      <div class="uc-title">Neural Architecture Search (NAS)</div>
+      <p class="uc-body">Google Brain dan DeepMind menggunakan evolutionary algorithms untuk mencari arsitektur jaringan saraf yang optimal — mirip dengan NEAT-style speciation yang diimplementasikan di sini. Prinsip "protecting innovation through speciation" langsung diterapkan dalam NAS untuk mencegah eliminasi prematur arsitektur baru yang belum mature.</p>
+    </div>
+    <div class="use-case-card">
+      <div class="uc-num">Kasus 05</div>
+      <div class="uc-title">Drug Discovery dan Molecular Design</div>
+      <p class="uc-body">Neuroevolution dan novelty search digunakan untuk eksplorasi chemical space dalam drug discovery — mencari kandidat molekul yang strukturnya belum pernah ditemukan sebelumnya (analog dengan novelty archive). Sistem seperti Insilico Medicine menggunakan generative evolution untuk menemukan molekul obat baru.</p>
+    </div>
+    <div class="use-case-card">
+      <div class="uc-num">Kasus 06</div>
+      <div class="uc-title">Adaptive Control Systems</div>
+      <p class="uc-body">Sistem kontrol adaptif untuk drone, satellite attitude control, atau industrial process control sering tidak dapat dioptimasi menggunakan gradient karena environment model tidak differentiable. Evolutionary black-box optimization seperti yang diimplementasikan di sini adalah pendekatan praktis untuk domain tersebut.</p>
+    </div>
+  </div>
+
+  <div class="note">Yang membuat pendekatan ini tetap relevan di era deep learning adalah satu hal: ia tidak memerlukan reward function yang differentiable. Untuk domain di mana reward hanya bisa diobservasi sebagai angka hitam-putih dari simulator atau dunia nyata, evolution adalah pilihan yang kompetitif.</div>
+</section>
+
+
+<!-- ═══════════════════════════════
+     SECTION 5 — LINKS
+═══════════════════════════════ -->
+<section id="links">
+  <div class="sec-num">05 — Repository dan Kontak</div>
+  <h2>Source Code dan Media</h2>
+
+  <p>Seluruh source code tersedia sebagai Jupyter Notebook yang dapat dijalankan langsung di Google Colab tanpa memerlukan GPU.</p>
+
+  <div class="social-section">
+    <div class="social-group">
+      <div class="social-group-label">Source code available here:</div>
+      <a class="social-link" href="GANTI_DENGAN" target="_blank">
+        <div class="social-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+          </svg>
+        </div>
+        <span class="social-link-label">github.com/USERNAME/REPO-NAME</span>
+      </a>
+    </div>
+
+    <div class="social-group">
+      <div class="social-group-label">Let&#39;s connect:</div>
+      <a class="social-link" href="GANTI_DENGAN_LINK_INSTAGRAM" target="_blank">
+        <div class="social-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+          </svg>
+        </div>
+        <span class="social-link-label">instagram.com/USERNAME</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════
+     SECTION 6 — REFERENCES
+═══════════════════════════════ -->
+<section id="references">
+  <div class="sec-num">06 — Referensi</div>
+  <h2>Referensi</h2>
+
+  <ul class="ref-list">
+    <li>Stanley, K. O., &amp; Miikkulainen, R. (2002). Evolving Neural Networks through Augmenting Topologies. <em>Evolutionary Computation</em>, 10(2), 99–127. MIT Press.</li>
+    <li>Lehman, J., &amp; Stanley, K. O. (2011). Abandoning Objectives: Evolution Through the Search for Novelty Alone. <em>Evolutionary Computation</em>, 19(2), 189–223.</li>
+    <li>Mouret, J. B., &amp; Clune, J. (2015). Illuminating search spaces by mapping elites. <em>arXiv</em>:1504.04909.</li>
+    <li>Salimans, T., Ho, J., Chen, X., Sidor, S., &amp; Sutskever, I. (2017). Evolution Strategies as a Scalable Alternative to Reinforcement Learning. <em>arXiv</em>:1703.03864. OpenAI.</li>
+    <li>Rechenberg, I. (1973). <em>Evolutionsstrategie: Optimierung technischer Systeme nach Prinzipien der biologischen Evolution</em>. Stuttgart: Frommann-Holzboog.</li>
+    <li>Such, F. P., Madhavan, V., Conti, E., Lehman, J., Stanley, K. O., &amp; Clune, J. (2017). Deep Neuroevolution: Genetic Algorithms are a Competitive Alternative for Training Deep Neural Networks for Reinforcement Learning. <em>arXiv</em>:1712.06567. Uber AI Labs.</li>
+    <li>Clune, J., Stanley, K. O., Pennock, R. T., &amp; Ofria, C. (2011). On the performance of indirect encoding across the continuum of regularity. <em>IEEE Transactions on Evolutionary Computation</em>, 15(3), 346–367.</li>
+    <li>Doncieux, S., Bredeche, N., Mouret, J. B., &amp; Eiben, A. E. (2015). Evolutionary Robotics: What, Why, and Where To. <em>Frontiers in Robotics and AI</em>, 2, 4.</li>
+  </ul>
+</section>
+
+<hr class="rule">
+
+<footer>
+  <span>Self-Driving Car Neuroevolution Research — v4.1 vs v5</span>
+  <span>Python 3 + NumPy + PIL — No Backpropagation</span>
+</footer>
+
+</div><!-- /page -->
+</body>
+</html>
+
